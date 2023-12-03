@@ -1,6 +1,6 @@
 # Imgproxy Portrait Uploader
 
-A Python Flask sample code using AAD for authentication, allowing employee to upload to upload their portrait photo, making some simple checks e.g. headarea ratio using OpenCV, and transforming the format and dimension using imgproxy in micro service architecture with cintainer as an option.
+A Python Flask sample code using AAD for authentication, allowing employee to upload to upload their portrait photo, making some simple checks e.g. head area ratio using OpenCV, and transforming the format and dimension using imgproxy in microservice architecture with Docker images as an option.
 
 ## Table of Contents
 
