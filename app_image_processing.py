@@ -61,11 +61,25 @@ def crop_and_resize(image_path, width, height, quality):
         face = faces[0]
         left, top, right, bottom = face.left(), face.top(), face.right(), face.bottom()
 
+        # Calculate the original aspect ratio
+        original_width, original_height = img.size
+        original_aspect_ratio = original_width / original_height
+
+        # Calculate the target width or height to maintain the original aspect ratio
+        target_width = int(height * original_aspect_ratio)
+        target_height = int(width / original_aspect_ratio)
+
+        # Choose the larger dimension to resize
+        if target_width <= width:
+            target_size = (target_width, height)
+        else:
+            target_size = (width, target_height)
+
         # Crop the image to the detected face
         img_cropped = img.crop((left, top, right, bottom))
 
-        # Resize the image to the specified width and height
-        img_resized = img_cropped.resize((width, height), Image.ANTIALIAS)
+        # Resize the image to the calculated dimensions
+        img_resized = img_cropped.resize(target_size, Image.ANTIALIAS)
 
         # Save the processed image
         processed_path = os.path.join('uploads', 'processed_' + os.path.basename(image_path))
@@ -94,9 +108,9 @@ def process_image(filename):
         return jsonify({'error': f'Head height is less than {min_head_height_percentage}% of the photo height'}), 400
 
     # Crop and resize the image
-    width = int(config['imgproxy']['width'])
-    height = int(config['imgproxy']['height'])
-    quality = int(config['imgproxy']['quality'])
+    width = int(config['imgproxy_processing']['width'])
+    height = int(config['imgproxy_processing']['height'])
+    quality = int(config['imgproxy_processing']['quality'])
 
     processed_image_path = crop_and_resize(image_path, width, height, quality)
 
