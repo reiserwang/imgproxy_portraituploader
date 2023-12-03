@@ -39,10 +39,16 @@ Make sure you have the following installed:
     ```
 
 ### Usage
+1. Start the main Flask application:
     ```bash
-    pip install -r requirements.txt
+    python app_main.py
     ```
-    Visit http://localhost:5000 in your web browser.
+
+2. Start the image processing microservice in a separate terminal:
+     ```bash
+    python app_image_processing.py
+    ```
+3. Visit http://localhost:5000 in your web browser.
 
 ### Configuration
 
@@ -53,6 +59,26 @@ Update the client_secrets.json file with your Azure AD credentials.
 #### imgproxy Configuration
 Configure imgproxy by updating the imgproxy_config.ini file with your settings.
 
+#### Build Docker images and run on it
+1. For the main Flask application:
+    ```bash
+    docker build -t your_main_app_image -f Dockerfile_main .
+    ```
+2. For the image processing microservice:
+    ```bash
+    docker build -t your_image_processing_image -f Dockerfile_image_processing .
+    ```
+3. Replace your_main_app_image and your_image_processing_image with the desired names for your Docker images.
+
+4. Run the Docker containers:
+    - For the main Flask application:
+    ```bash
+    docker run -p 5000:5000 your_main_app_image
+    ```
+    - For the image processing microservice:
+    ```bash
+    docker run -p 5001:5001 your_image_processing_image
+    ```
 ### Test
 To run unit tests, use the following command:
     ``bash
