@@ -1,6 +1,0 @@
-Flask==2.0.2
-flask-oidc==1.4.0
-python-dotenv==0.19.1
-werkzeug==2.0.2
-imgproxy==0.9.0
-opencv-python==4.5.3.56
