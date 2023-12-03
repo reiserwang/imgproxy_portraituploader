@@ -3,15 +3,10 @@ from flask_oidc import OpenIDConnect
 import os
 from werkzeug.utils import secure_filename
 import requests
+from config import Config  # Import the Config class from config.py
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['OIDC_CLIENT_SECRETS'] = 'client_secrets.json'
-app.config['OIDC_ID_TOKEN_COOKIE_SECURE'] = False
-app.config['OIDC_REQUIRE_VERIFIED_EMAIL'] = False
-app.config['IMAGE_PROCESSING_SERVICE_URL'] = 'http://image-processing-service:5001'
-app.config['API_KEY'] = 'your_api_key'
-
+app.config.from_object(Config)  # Use the Config class for configuration
 oidc = OpenIDConnect(app)
 
 def get_employee_id():
@@ -22,7 +17,7 @@ def get_employee_id():
 
 def authenticate_request():
     api_key = request.headers.get('Authorization')
-    if not api_key or api_key != app.config['API_KEY']:
+    if not api_key or api_key != Config.API_KEY:
         return jsonify({'error': 'Unauthorized'}), 401
 
     return None
@@ -56,7 +51,8 @@ def upload():
     file.save(file_path)
 
     # Redirect to the image processing microservice
-    response = requests.get(f"{app.config['IMAGE_PROCESSING_SERVICE_URL']}/process_image/{processed_filename}")
+    headers = Config.HEADERS
+    response = requests.get(f"{Config.IMAGE_PROCESSING_SERVICE_URL}/process_image/{processed_filename}", headers=headers)
 
     if response.status_code != 200:
         return jsonify({'error': 'Image processing failed'}), 500
