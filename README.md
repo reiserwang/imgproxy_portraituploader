@@ -97,7 +97,7 @@ Configure imgproxy by updating the imgproxy.config file with your settings.
 ### Test
 To run unit tests, use the following command:
 
-    ``bash
+    ```bash
     python -m unittest test_app.py
     ```
 
