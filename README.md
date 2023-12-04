@@ -58,13 +58,18 @@ Make sure you have the following installed:
 
 #### Azure AD Configuration
 Create an Azure AD application and obtain the client ID and client secret.
-Update the client_secrets.json file with your Azure AD credentials.
+Update the **client_secrets.json** file with your Azure AD credentials.
 
 #### Microservice Configuration
-Make sure to replace 'your_secret_key' and 'your_api_key' in config.py with your actual secret and API key values. Additionally, ensure that the configuration values match your actual setup, including the URL for the image processing microservice.
+Make sure to replace 'your_secret_key' and 'your_api_key' in **config.py** with your actual secret and API key values. Additionally, ensure that the configuration values match your actual setup, including the URL for the image processing microservice.
+
+> Remember to keep the config.py file secure, especially if it contains sensitive information like API keys. 
+Additionally, it's recommended not to include sensitive information in version control systems. 
+You might want to use environment variables or a configuration management tool to handle sensitive information in production environments.
+
 
 #### imgproxy Configuration
-Configure imgproxy by updating the imgproxy.config file with your settings.
+Configure imgproxy by updating the **imgproxy.config** file with your settings.
 
 #### Docker
 1. For the main Flask application:
