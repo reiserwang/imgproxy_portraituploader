@@ -69,7 +69,7 @@ You might want to use environment variables or a configuration management tool t
 
 
 #### imgproxy Configuration
-Configure imgproxy by updating the **imgproxy.config** file with your settings.
+Configure imgproxy by updating the **app_config.ini** file with your settings.
 
 #### Docker
 1. For the main Flask application:
