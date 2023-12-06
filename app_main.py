@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_oidc import OpenIDConnect
 import os
 from werkzeug.utils import secure_filename
-import requests
+import aiohttp
+import asyncio
 from config import Config  # Import the Config class from config.py
 
 app = Flask(__name__)
@@ -23,56 +24,60 @@ def get_employee_id():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def authenticate_request():
+async def authenticate_request():
     api_key = request.headers.get('Authorization')
     if not api_key or api_key != Config.API_KEY:
         return jsonify({'error': 'Unauthorized'}), 401
 
     return None
 
-@app.route('/')
-def home():
-    if oidc.user_loggedin:
-        return render_template('home.html')
-    else:
+async def upload_file(file, employee_id):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
+    file.save(file_path)
+    return file_path
+
+async def process_image(file_path, employee_id, session):
+    # You can use aiohttp to make asynchronous requests to the image processing service
+    # For demonstration purposes, let's assume the image processing service is running locally on port 5001
+    image_processing_url = f'http://localhost:5001/process_image'
+    data = {'image_paths': [file_path]}
+    
+    async with session.post(image_processing_url, json=data) as response:
+        result = await response.json()
+
+    return result.get(file_path, {})
+
+async def handle_uploaded_file(file, employee_id, session):
+    file_path = await upload_file(file, employee_id)
+    result = await process_image(file_path, employee_id, session)
+    return result
+
+async def process_files(files, employee_id):
+    async with aiohttp.ClientSession() as session:
+        tasks = [handle_uploaded_file(file, employee_id, session) for file in files]
+        return await asyncio.gather(*tasks)
+
+@app.route('/', methods=['GET', 'POST'])
+async def home():
+    if not oidc.user_loggedin:
         return redirect(url_for('oidc.login'))
 
-@app.route('/upload', methods=['POST'])
-def upload():
-    authentication_result = authenticate_request()
-    if authentication_result:
-        return authentication_result
+    if request.method == 'POST':
+        authentication_result = await authenticate_request()
+        if authentication_result:
+            return authentication_result
 
-    # check if the post request has the file part
-    if 'file' not in request.files:
-        return jsonify({'error': 'File is missing'}), 400
+        files = request.files.getlist('file')
 
-    file = request.files['file']
+        if not files:
+            return jsonify({'error': 'No files provided'}), 400
 
-    # if user does not select file, browser also submit an empty part without filename
-    if file.filename == '':
-        return jsonify({'error': 'File name is missing'}), 400
-
-    if file and allowed_file(file.filename):
-        # Get employee ID and use it as part of the processed image filename
         employee_id = get_employee_id()
-        processed_filename = f"{employee_id}.jpg"
+        results = await process_files(files, employee_id)
 
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
-        file.save(file_path)
+        return render_template('result_async.html', results=results)
 
-        # Redirect to the image processing microservice
-        headers = Config.HEADERS
-        response = requests.get(f"{Config.IMAGE_PROCESSING_SERVICE_URL}/process_image/{processed_filename}", headers=headers)
-
-        if response.status_code != 200:
-            return jsonify({'error': 'Image processing failed'}), 500
-
-        processed_url = response.json().get('processed_url', None)
-
-        return render_template('result.html', processed_url=processed_url)
-
-    return jsonify({'error': 'Invalid file type'}), 400
+    return render_template('home_async.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000, debug=True)
